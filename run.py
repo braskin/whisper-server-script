@@ -28,7 +28,7 @@ def extract_model_name(filename):
     match = re.search(regex, filename)
     model_name = match.group(1) if match else None
     if model_name == "large":
-        model_name = "large-v1"
+        model_name = "large-v2"
     if model_name == None:
         model_name = "medium"
     return model_name
@@ -137,7 +137,8 @@ def process():
         transcription = whisperx_transcribe.transcribe(audio_file_wav, model_type_needed, language=language)
 
         s3_res.Object(bucket, 'output/' + os.path.basename(file) + '.txt').put(Body=json.dumps(transcription))
-        s3_res.Object(bucket, file).delete()
+        # while debugging don't delete
+        # s3_res.Object(bucket, file).delete()
 try:
     with FileLock("/tmp/transcribe.lock", 3):
         process()
