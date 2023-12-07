@@ -13,6 +13,7 @@ whisper_models = {}
 last_timestamp = time.time()
 
 def debug(statement):
+    global last_timestamp
     current_time = time.time()
     print(statement)
     print(f"Time passed: {current_time - last_timestamp:.2f} s")
