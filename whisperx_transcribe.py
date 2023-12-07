@@ -10,9 +10,9 @@ compute_type = "float16" # change to "int8" if low on GPU mem (may reduce accura
 diarize_model = whisperx.DiarizationPipeline(use_auth_token=os.environ['HF_TOKEN'], device=device)
 
 whisper_models = {}
+last_timestamp = time.time()
 
 def debug(statement):
-    global last_timestamp
     current_time = time.time()
     print(statement)
     print(f"Time passed: {current_time - last_timestamp:.2f} s")
@@ -21,7 +21,6 @@ def debug(statement):
 
 # audio_file must be mp3 or wav
 def transcribe(audio_file, model_needed, language=None):
-    global last_timestamp
     batch_size = 8 # reduce if low on GPU mem
 
     asr_options = {
