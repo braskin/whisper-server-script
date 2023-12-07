@@ -69,46 +69,25 @@ def transcribe(audio_file, model_needed, language=None):
     except:
         print("Fail to align", result["language"], "lang")
 
-    # print(result["segments"]) # after alignment
-
-    # delete model if low on GPU resources
-    # import gc; gc.collect(); torch.cuda.empty_cache(); del model_a
-
-    # add min/max number of speakers if known
-    # debug("Load Diarize Model")
-    # diarize_segments = diarize_model(audio_file)
-
-    # diarize_model(audio_file, min_speakers=min_speakers, max_speakers=max_speakers)
-    # debug("Starting Diarize")
-    # result = whisperx.assign_word_speakers(diarize_segments, result)
-    # debug("Ending Diarize")
-
-    #print(diarize_segments)
-
-    #for segment in result["segments"]:
-
     writer = whisperx.utils.SubtitlesWriter("")
     writer.always_include_hours = True
     writer.decimal_marker = '.'
 
     items = []
 
-    for start, end, text in writer.iterate_result(result, {
+    options = {
         "max_line_width": None,
         "max_line_count": None,
         "highlight_words": False
-    }):
-        parts = text.split(":")
-        if len(parts) > 1:
-            speaker, phrase = parts
-        else:
-            speaker = "[UNKNOWN]"
-            phrase = text
-        items.append({
-            "start": start,
-            "end": end,
-            "speaker": speaker,
-            "phrase": phrase
-        })
+    }
+
+    # i want a vtt
+    items.append("WEBVTT\n")
+
+    #iterate from 1 onwards and add it into the vtt format
+    i = 1
+    for start, end, text in writer.iterate_result(result, options):
+        items.append(f"{i}\n{start} --> {end}\n{text}\n")
+        i = i + 1
 
     return items

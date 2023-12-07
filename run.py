@@ -136,7 +136,7 @@ def process():
 
         transcription = whisperx_transcribe.transcribe(audio_file_wav, model_type_needed, language=language)
 
-        s3_res.Object(bucket, 'output/' + os.path.basename(file) + '.txt').put(Body=json.dumps(transcription))
+        s3_res.Object(bucket, 'output/' + os.path.basename(file) + '.txt').put(Body=transcription)
         # while debugging don't delete
         # s3_res.Object(bucket, file).delete()
 try:
