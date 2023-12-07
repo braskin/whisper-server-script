@@ -12,6 +12,7 @@ diarize_model = whisperx.DiarizationPipeline(use_auth_token=os.environ['HF_TOKEN
 whisper_models = {}
 
 def debug(statement):
+    global last_timestamp
     current_time = time.time()
     print(statement)
     print(f"Time passed: {current_time - last_timestamp:.2f} s")
