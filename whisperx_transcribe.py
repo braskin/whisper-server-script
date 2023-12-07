@@ -1,6 +1,7 @@
 import whisperx
 import gc
 import os
+import time
 
 device = "cuda"
 compute_type = "float16" # change to "int8" if low on GPU mem (may reduce accuracy)
@@ -10,8 +11,16 @@ diarize_model = whisperx.DiarizationPipeline(use_auth_token=os.environ['HF_TOKEN
 
 whisper_models = {}
 
+def debug(statement):
+    current_time = time.time()
+    print(statement)
+    print(f"Time passed: {current_time - last_timestamp:.2f} s")
+    last_timestamp = current_time
+
+
 # audio_file must be mp3 or wav
 def transcribe(audio_file, model_needed, language=None):
+    global last_timestamp
     batch_size = 8 # reduce if low on GPU mem
 
     asr_options = {
@@ -24,6 +33,7 @@ def transcribe(audio_file, model_needed, language=None):
     }
     vad_options = {'vad_onset': 0.5, 'vad_offset': 0.363}
 
+    debug("Loading Model")
     if not model_needed in whisper_models:
         whisper_models[model_needed] = whisperx.load_model(
             model_needed, device=device, compute_type=compute_type, asr_options=asr_options, vad_options=vad_options, task = 'transcribe'
@@ -32,16 +42,18 @@ def transcribe(audio_file, model_needed, language=None):
     # 1. Transcribe with original whisper (batched)
     model = whisper_models[model_needed]
 
+    debug("Loading Audio")
     audio = whisperx.load_audio(audio_file)
     transcribe_args = {}
     if language != None:
         transcribe_args["language"] = language
 
-    print("Starting Transcript")
+    debug("Starting Transcript")
 
     result = model.transcribe(audio, batch_size=batch_size, **transcribe_args)
 
-    print("Ending Transcript")
+    debug("Ending Transcript")
+
     print(result["segments"]) # before alignment
 
     # delete model if low on GPU resources
@@ -50,9 +62,9 @@ def transcribe(audio_file, model_needed, language=None):
     # 2. Align whisper output
     try:
         model_a, metadata = whisperx.load_align_model(language_code=result["language"], device=device)
-        print ("Starting Align")
+        debug("Starting Align")
         result = whisperx.align(result["segments"], model_a, metadata, audio, device, return_char_alignments=False)
-        print ("Ending Align")
+        debug("Ending Align")
     except:
         print("Fail to align", result["language"], "lang")
 
@@ -62,12 +74,13 @@ def transcribe(audio_file, model_needed, language=None):
     # import gc; gc.collect(); torch.cuda.empty_cache(); del model_a
 
     # add min/max number of speakers if known
+    debug("Load Diarize Model")
     diarize_segments = diarize_model(audio_file)
 
     # diarize_model(audio_file, min_speakers=min_speakers, max_speakers=max_speakers)
-    print ("Starting Diarize")
+    debug("Starting Diarize")
     result = whisperx.assign_word_speakers(diarize_segments, result)
-    print ("Ending Diarize")
+    debug("Ending Diarize")
 
     #print(diarize_segments)
 
