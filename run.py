@@ -20,6 +20,7 @@ hf_token = os.environ['HF_TOKEN']
 s3 = boto3.client('s3', region_name='us-east-1')
 s3_res = boto3.resource('s3')
 ec2 = boto3.resource('ec2', region_name='us-east-1')
+start_time = time.time()
 
 # extracts model type from file name, model type is located after substring model_ and ends with _
 def extract_model_name(filename):
@@ -102,6 +103,7 @@ def process():
 
         audio_file = 'audio/audio.m4a'
         audio_file_mp3 = 'audio/audio.mp3'
+        audio_file_wav = 'audio/audio.wav'
         if os.path.isfile(audio_file):
             os.remove(audio_file)
 
@@ -115,23 +117,24 @@ def process():
             video_id = extract_video_id(youtube_url)
             try:
                 audio_file = download(video_id)
+                runffmpeg(audio_file, audio_file_wav)
             except Exception as e:
                 print("Fail processing file", file, e)
                 s3_res.Object(bucket, file).delete()
                 continue
         else:
             try:
-                extract_audio(input_file, audio_file)
+                extract_audio(input_file, audio_file_wav)
             except Exception as e:
                 print("Fail processing file", file, e)
                 s3_res.Object(bucket, file).delete()
                 continue
 
-        runffmpeg(audio_file, audio_file_mp3)
+        # runffmpeg(audio_file, audio_file_mp3)
 
         print("use model", model_type_needed, "language", language)
 
-        transcription = whisperx_transcribe.transcribe(audio_file_mp3, model_type_needed, language=language)
+        transcription = whisperx_transcribe.transcribe(audio_file_wav, model_type_needed, language=language)
 
         s3_res.Object(bucket, 'output/' + os.path.basename(file) + '.txt').put(Body=json.dumps(transcription))
         s3_res.Object(bucket, file).delete()
@@ -139,6 +142,7 @@ try:
     with FileLock("/tmp/transcribe.lock", 3):
         process()
         print("Done")
+        print("Total Time: ", time.time() - start_time)
 except Timeout:
     print(f"Another instance of this script is running. Exiting.")
     sys.exit()
