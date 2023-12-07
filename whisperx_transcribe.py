@@ -25,7 +25,7 @@ def transcribe(audio_file, model_needed, language=None):
     batch_size = 8 # reduce if low on GPU mem
 
     asr_options = {
-        'beam_size': 5, 'patience': None, 'length_penalty': 1.0, 'temperatures': (0.0, 0.2, 0.4, 0.6000000000000001, 0.8, 1.0),
+        'beam_size': 5, 'word_timestamps': True, 'patience': None, 'length_penalty': 1.0, 'temperatures': (0.0, 0.2, 0.4, 0.6000000000000001, 0.8, 1.0),
         'compression_ratio_threshold': 2.4, 'log_prob_threshold': -1.0, 'no_speech_threshold': 0.6, 'condition_on_previous_text': False,
         'initial_prompt': None, 'suppress_tokens': [-1], 'suppress_numerals': False,
         "repetition_penalty": 1,
