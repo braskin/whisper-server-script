@@ -37,7 +37,7 @@ def transcribe(audio_file, model_needed, language=None):
     debug("Loading Model")
     if not model_needed in whisper_models:
         whisper_models[model_needed] = whisperx.load_model(
-            model_needed, device=device, compute_type=compute_type, asr_options=asr_options, vad_options=vad_options, task = 'transcribe'
+            model_needed, device=device, compute_type=compute_type, asr_options=asr_options, language=language, vad_options=vad_options, task = 'transcribe'
         )
 
     # 1. Transcribe with original whisper (batched)
@@ -75,13 +75,13 @@ def transcribe(audio_file, model_needed, language=None):
     # import gc; gc.collect(); torch.cuda.empty_cache(); del model_a
 
     # add min/max number of speakers if known
-    debug("Load Diarize Model")
-    diarize_segments = diarize_model(audio_file)
+    # debug("Load Diarize Model")
+    # diarize_segments = diarize_model(audio_file)
 
     # diarize_model(audio_file, min_speakers=min_speakers, max_speakers=max_speakers)
-    debug("Starting Diarize")
-    result = whisperx.assign_word_speakers(diarize_segments, result)
-    debug("Ending Diarize")
+    # debug("Starting Diarize")
+    # result = whisperx.assign_word_speakers(diarize_segments, result)
+    # debug("Ending Diarize")
 
     #print(diarize_segments)
 
