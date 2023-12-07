@@ -55,7 +55,7 @@ def transcribe(audio_file, model_needed, language=None):
 
     debug("Ending Transcript")
 
-    print(result["segments"]) # before alignment
+    # print(result["segments"]) # before alignment
 
     # delete model if low on GPU resources
     # import gc; gc.collect(); torch.cuda.empty_cache(); del model
@@ -69,7 +69,7 @@ def transcribe(audio_file, model_needed, language=None):
     except:
         print("Fail to align", result["language"], "lang")
 
-    print(result["segments"]) # after alignment
+    # print(result["segments"]) # after alignment
 
     # delete model if low on GPU resources
     # import gc; gc.collect(); torch.cuda.empty_cache(); del model_a
